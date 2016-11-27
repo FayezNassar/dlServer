@@ -15,4 +15,5 @@ def first_connection():
        c.close()
 
 if __name__ == '__main__':
+    print "Hello world"
     first_connection()
