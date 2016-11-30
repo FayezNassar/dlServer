@@ -32,10 +32,11 @@ def first_connection():
     s.listen(5)
     print "After the bind"
     while True:
+        print "inside the loop"
         c, addr = s.accept()
         print 'Got connection from', addr
         c.send('Thank you for connecting')
-        c.close(s)
+        c.close()
 
 if __name__ == "__main__":
     print "mr7baaaaaaaaaa"
