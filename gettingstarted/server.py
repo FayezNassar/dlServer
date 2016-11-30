@@ -25,7 +25,7 @@ def first_connection():
     print "Hello world"
     s = socket.socket()
     host = socket.gethostname()
-    port = 12345
+    port = 5000
     s.bind((host, port))
     s.listen(5)
     while True:
