@@ -32,8 +32,4 @@ def first_connection():
         c, addr = s.accept()
         print 'Got connection from', addr
         c.send('Thank you for connecting')
-        c.close()
-
-if __name__ == "__main__":
-    print "Hello World"
-    first_connection()
+        c.close(
