@@ -21,14 +21,13 @@ class MultiLayerPerceptron(chainer.Chain):
         h2 = F.relu(self.l2(h1))
         return self.l3(h2)
 
-
 def first_connection():
+    print "Hello world"
     s = socket.socket()
     host = socket.gethostname()
     port = 12345
     s.bind((host, port))
     s.listen(5)
-    chainer.datasets.get_mnist()
     while True:
         c, addr = s.accept()
         print 'Got connection from', addr
@@ -37,5 +36,4 @@ def first_connection():
 
 
 if __name__ == '__main__':
-    print "Hello world"
     first_connection()
