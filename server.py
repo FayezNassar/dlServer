@@ -30,6 +30,7 @@ def first_connection():
     print port
     s.bind((host, port))
     s.listen(5)
+    print "After the bind"
     while True:
         c, addr = s.accept()
         print 'Got connection from', addr
