@@ -1,5 +1,6 @@
 import socket
 
+import os
 import chainer
 import chainer.functions as F
 import chainer.links as L
@@ -25,7 +26,7 @@ def first_connection():
     print "Hello world"
     s = socket.socket()
     host = socket.gethostname()
-    port = 5000
+    port = int(os.environ.get("PORT", 5000))
     s.bind((host, port))
     s.listen(5)
     while True:
