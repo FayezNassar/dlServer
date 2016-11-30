@@ -33,7 +33,3 @@ def first_connection():
         print 'Got connection from', addr
         c.send('Thank you for connecting')
         c.close()
-
-
-if __name__ == '__main__':
-    first_connection()
