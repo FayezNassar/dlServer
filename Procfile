@@ -1,1 +1,1 @@
-web: gunicorn gettingstarted.wsgi --log-file -
+bot: newrelic-admin run-program python server.py
