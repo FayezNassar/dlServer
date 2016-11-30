@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-import server
+import os
+import sys
+
 if __name__ == "__main__":
-    print "Hello World"
-    # server.first_connection()
-    # os.environ.setdefault("DJANGO_SETTINGS_MODULE", "server")
-    # from django.core.management import execute_from_command_line
-    # execute_from_command_line(sys.argv)
+    # os.environ.setdefault("DJANGO_SETTINGS_MODULE", "gettingstarted.settings")
+    from django.core.management import execute_from_command_line
+    execute_from_command_line(sys.argv)
