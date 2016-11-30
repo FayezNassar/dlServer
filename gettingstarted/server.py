@@ -32,4 +32,4 @@ def first_connection():
         c, addr = s.accept()
         print 'Got connection from', addr
         c.send('Thank you for connecting')
-        c.close(
+        c.close(s)
