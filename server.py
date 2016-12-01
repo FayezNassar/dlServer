@@ -22,7 +22,7 @@ class MultiLayerPerceptron(chainer.Chain):
         h2 = F.relu(self.l2(h1))
         return self.l3(h2)
 
-def first_connection():
+def first_connection(application):
     print "Hello world"
     s = socket.socket()
     host = socket.gethostname()
@@ -37,6 +37,7 @@ def first_connection():
         print 'Got connection from', addr
         c.send('Thank you for connecting')
     c.close()
+    return application
 
 if __name__ == "__main__":
     print "mr7baaaaaaaaaa"
