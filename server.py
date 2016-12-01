@@ -27,7 +27,7 @@ def first_connection():
     s = socket.socket()
     host = socket.gethostname()
     port = int(os.environ.get("PORT", 5000))
-    print "host is: " + host + ", port number is:" +port
+    print "host is: " + str(host) + ", port number is:" + str(port)
     s.bind((host, port))
     s.listen(5)
     print "After the bind"
