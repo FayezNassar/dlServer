@@ -4,7 +4,10 @@ from django.http import HttpResponse
 from .models import Greeting
 
 def index(request):
-    return HttpResponse('Hello Deep learning server!')
+    return HttpResponse("<h2>Hello Deep learning server!</h2>")
+
+def get_file_url(request):
+    return HttpResponse('Hello From get_file_url')
 
 def db(request):
     greeting = Greeting()
