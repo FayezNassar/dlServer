@@ -9,6 +9,7 @@ def index(request):
 def get_file_url(request):
     return HttpResponse('Hello From get_file_url')
 
+
 def db(request):
     greeting = Greeting()
     greeting.save()
