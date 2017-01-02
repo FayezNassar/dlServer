@@ -1,5 +1,5 @@
 import chainer.links as L
-
+from . import models
 # define the initial network
 linNeuralNetwork_l1 = L.Linear(784, 300)
 linNeuralNetwork_l2 = L.Linear(300, 10)
@@ -7,3 +7,7 @@ linNeuralNetwork_l2 = L.Linear(300, 10)
 # witch file is next to train on.
 image_file_index = 1
 max_client_id = 1
+epoch_number = 1
+
+accuracy_statistic = models.AccuracyStatistic(epoch_number=1, accuracy=0.0, number_of_validate_post=0)
+accuracy_statistic.save()

@@ -14,6 +14,7 @@ class TimeStatistic(models.Model):
 
 
 class AccuracyStatistic(models.Model):
-    epoch = models.IntegerField()
+    epoch_number = models.IntegerField(primary_key=True)
     accuracy = models.FloatField()
+    number_of_validate_post = models.IntegerField()
 
