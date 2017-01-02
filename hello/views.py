@@ -28,7 +28,7 @@ def join_system(request):
 
 def deep_learning(request):
     if request.method == 'GET':
-        mode = "validation" if (MLP.image_file_index == 2) else "train"
+        mode = "validation" if (MLP.image_file_index == 10) else "train"
         data = {
             'image_file_index': MLP.image_file_index,
             'mode': mode,
@@ -72,6 +72,9 @@ def deep_learning(request):
             accuracy = json.loads(request_message)['accuracy']
             epoch_number = json.loads(request_message)['epoch_number']
             accuracy_statistic = AccuracyStatistic.objects.get(epoch_number=epoch_number)
+            print("epoch_number: " + str(accuracy_statistic.epoch_number))
+            print("accuracy: " + str(accuracy_statistic.accuracy))
+            print("number_of_validate_post: " + str(accuracy_statistic.number_of_validate_post))
             accuracy_statistic = AccuracyStatistic(epoch_number=epoch_number,
                                                    accuracy=accuracy_statistic.accuracy+(accuracy/5),
                                                    number_of_validate_post=accuracy_statistic.number_of_validate_post+1)
