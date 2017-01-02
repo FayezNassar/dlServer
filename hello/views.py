@@ -28,7 +28,16 @@ def join_system(request):
 
 def deep_learning(request):
     if request.method == 'GET':
-        mode = "validation" if (MLP.image_file_index == 10) else "train"
+        if MLP.image_file_index <= 45:
+            mode = 'train'
+        else:
+            if MLP.number_of_response_per_epoch < 45:
+                mode = 'validation'
+            else:
+                mode = 'wait'
+        if mode != 'wait':
+            if MLP.image_file_index == 1:
+                MLP.epoch_number += 1
         data = {
             'image_file_index': MLP.image_file_index,
             'mode': mode,
@@ -36,18 +45,15 @@ def deep_learning(request):
             'l2_w': MLP.linNeuralNetwork_l2.W.data.tolist(),
             'epoch_number': MLP.epoch_number,
         }
-        MLP.image_file_index = (MLP.image_file_index % 50) + 1
-        if MLP.image_file_index == 50:
-            MLP.epoch_number += 1
-            accuracy_statistic = AccuracyStatistic(epoch_number=MLP.epoch_number, accuracy=0.0,
-                                                   number_of_validate_post=0)
-            accuracy_statistic.save()
+        if mode != 'wait':
+            MLP.image_file_index = (MLP.image_file_index % 50) + 1
         return HttpResponse(json.dumps(data))
 
     elif request.method == 'POST':
         request_message = request.read().decode('utf-8')
         mode = str(json.loads(request_message)['mode'])
         if mode == 'train':
+            MLP.number_of_response_per_epoch += 1
             # collect the date that client sent, and update the relevant
             # update the time statistic
             client_id = json.loads(request_message)['id']
@@ -71,7 +77,16 @@ def deep_learning(request):
         elif mode == 'validation':
             accuracy = json.loads(request_message)['accuracy']
             epoch_number = json.loads(request_message)['epoch_number']
-            accuracy_statistic = AccuracyStatistic.objects.get(epoch_number=epoch_number)
+            if AccuracyStatistic.objects.filter(epoch_number=epoch_number).exists():
+                accuracy_statistic = AccuracyStatistic.objects.get(epoch_number=epoch_number)
+                accuracy_statistic = AccuracyStatistic(epoch_number=epoch_number,
+                                                       accuracy=accuracy_statistic.accuracy + (accuracy / 5),
+                                                       number_of_validate_post=accuracy_statistic.number_of_validate_post + 1)
+            else :
+                accuracy_statistic = AccuracyStatistic(epoch_number=epoch_number,
+                                                       accuracy=(accuracy / 5),
+                                                       number_of_validate_post=1)
+            accuracy_statistic.save()
             print("epoch_number: " + str(accuracy_statistic.epoch_number))
             print("accuracy: " + str(accuracy_statistic.accuracy))
             print("number_of_validate_post: " + str(accuracy_statistic.number_of_validate_post))
