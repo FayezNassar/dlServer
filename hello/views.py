@@ -29,6 +29,7 @@ def join_system(request):
         return HttpResponse(client_id)
     if request.method == 'GET':
         print('hello')
+        return HttpResponse("<h2>Hello Deep learning server!</h2>")
 
 
 def deep_learning(request):
