@@ -14,12 +14,9 @@ def index(request):
 
 def join_system(request):
     if request.method == 'POST':
-        print('got joinsystem post request')
         client_id = MLP.max_client_id
         MLP.max_client_id += 1
-        print('before Timestatistic')
         time_statistic = TimeStatistic(device_id=client_id, mini_patch_times=0, total_time=0.0)
-        print('After Timestatistic')
         try:
             time_statistic.save()
         except Exception as inst:
@@ -27,9 +24,6 @@ def join_system(request):
             print(inst.args)
             print(inst)
         return HttpResponse(client_id)
-    if request.method == 'GET':
-        print('hello')
-        return HttpResponse("<h2>Hello Deep learning server!</h2>")
 
 
 def deep_learning(request):
