@@ -16,6 +16,12 @@ def index(request):
 def join_system(request):
     if request.method == 'POST':
         print("got post request")
+        try:
+            flag = MaxClientID.objects.filter(max_id_str='MAX').exists()
+        except Exception as inst:
+            print(type(inst))
+            print(inst.args)
+            print(inst)
         if MaxClientID.objects.filter(max_id_str='MAX').exists():
             print('MaxClientId is empty')
             max_client_id = MaxClientID.objects.get(max_id_str='MAX')
@@ -23,7 +29,7 @@ def join_system(request):
         else:
             print('MaxClientId is not empty')
             max_client_id = MaxClientID(max_id_str='MAX', max_id=1)
-            print('got thte MaxClient')
+            print('got the MaxClient')
         client_id = max_client_id.max_id
         max_client_id = MaxClientID(max_id_str='MAX', max_id = client_id + 1)
         print('before save')
