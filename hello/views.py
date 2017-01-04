@@ -28,6 +28,7 @@ def join_system(request):
 
 def deep_learning(request):
     if request.method == 'GET':
+        print('deep_learning/GET')
         if MLP.image_file_index <= 45:
             mode = 'train'
         else:
@@ -35,6 +36,7 @@ def deep_learning(request):
                 mode = 'validation'
             else:
                 mode = 'wait'
+        print('the mode is: ' + mode)
         if mode != 'wait':
             if MLP.image_file_index == 1:
                 MLP.epoch_number += 1
