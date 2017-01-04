@@ -9,4 +9,5 @@ image_file_index = 1
 max_client_id = 1
 epoch_number = 0
 
+# to extinguish between different epochs.
 number_of_response_per_epoch = 0

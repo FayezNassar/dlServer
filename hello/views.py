@@ -31,7 +31,7 @@ def deep_learning(request):
         if MLP.image_file_index <= 45:
             mode = 'train'
         else:
-            if MLP.number_of_response_per_epoch < 45:
+            if MLP.number_of_response_per_epoch > 45:
                 mode = 'validation'
             else:
                 mode = 'wait'
@@ -47,6 +47,9 @@ def deep_learning(request):
         }
         if mode != 'wait':
             MLP.image_file_index = (MLP.image_file_index % 50) + 1
+            # in the case the epoch done, reset the number_of_response_per_epoch to start a new repoch
+            if MLP.image_file_index == 50:
+                MLP.number_of_response_per_epoch = 0
         return HttpResponse(json.dumps(data))
 
     elif request.method == 'POST':
@@ -82,7 +85,7 @@ def deep_learning(request):
                 accuracy_statistic = AccuracyStatistic(epoch_number=epoch_number,
                                                        accuracy=accuracy_statistic.accuracy + (accuracy / 5),
                                                        number_of_validate_post=accuracy_statistic.number_of_validate_post + 1)
-            else :
+            else:
                 accuracy_statistic = AccuracyStatistic(epoch_number=epoch_number,
                                                        accuracy=(accuracy / 5),
                                                        number_of_validate_post=1)
@@ -94,6 +97,7 @@ def deep_learning(request):
                                                    accuracy=accuracy_statistic.accuracy+(accuracy/5),
                                                    number_of_validate_post=accuracy_statistic.number_of_validate_post+1)
             accuracy_statistic.save()
+        return HttpResponse('')
 
 
 def db(request):
