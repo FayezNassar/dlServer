@@ -97,7 +97,7 @@ def deep_learning(request):
                                                    accuracy=accuracy_statistic.accuracy+(accuracy/5),
                                                    number_of_validate_post=accuracy_statistic.number_of_validate_post+1)
             accuracy_statistic.save()
-        return HttpResponse('')
+        return HttpResponse("<h2>Hello Deep learning server!</h2>")
 
 
 def db(request):
