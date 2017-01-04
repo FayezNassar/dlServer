@@ -15,13 +15,20 @@ def index(request):
 
 def join_system(request):
     if request.method == 'POST':
+        print("got post request")
         if MaxClientID.objects.filter(max_id_str='MAX').exists():
+            print('MaxClientId is empty')
             max_client_id = MaxClientID.objects.get(max_id_str='MAX')
+            print('create new MaxClient')
         else:
+            print('MaxClientId is not empty')
             max_client_id = MaxClientID(max_id_str='MAX', max_id=1)
+            print('got thte MaxClient')
         client_id = max_client_id.max_id
         max_client_id = MaxClientID(max_id_str='MAX', max_id = client_id + 1)
+        print('before save')
         max_client_id.save()
+        print('after save')
         time_statistic = TimeStatistic(device_id=client_id, mini_patch_times=0, total_time=0.0)
         try:
             time_statistic.save()
