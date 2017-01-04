@@ -5,6 +5,7 @@ import json
 from .models import Greeting
 from .models import TimeStatistic
 from .models import AccuracyStatistic
+from .models import MaxClientID
 from . import MLP
 
 
@@ -14,8 +15,13 @@ def index(request):
 
 def join_system(request):
     if request.method == 'POST':
-        client_id = MLP.max_client_id
-        MLP.max_client_id += 1
+        if MaxClientID.objects.filter(max_id_str='MAX').exists():
+            max_client_id = MaxClientID.objects.get(max_id_str='MAX')
+        else:
+            max_client_id = MaxClientID(max_id_str='MAX', max_id=1)
+        client_id = max_client_id.max_id
+        max_client_id = MaxClientID(max_id_str='MAX', max_id = client_id + 1)
+        max_client_id.save()
         time_statistic = TimeStatistic(device_id=client_id, mini_patch_times=0, total_time=0.0)
         try:
             time_statistic.save()

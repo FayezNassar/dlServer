@@ -6,7 +6,7 @@ linNeuralNetwork_l2 = L.Linear(300, 10)
 
 # witch file is next to train on.
 image_file_index = 1
-max_client_id = 1
+# max_client_id = 1
 epoch_number = 0
 
 # to extinguish between different epochs.
