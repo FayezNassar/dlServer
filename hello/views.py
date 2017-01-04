@@ -8,33 +8,37 @@ from .models import AccuracyStatistic
 from .models import MaxClientID
 from . import MLP
 
+max_client_id = 1
+
 
 def index(request):
     return HttpResponse("<h2>Hello Deep learning server!</h2>")
 
 
 def join_system(request):
+    global max_client_id
     if request.method == 'POST':
-        print("got post request")
-        try:
-            flag = MaxClientID.objects.filter(max_id_str='MAX').exists()
-        except Exception as inst:
-            print(type(inst))
-            print(inst.args)
-            print(inst)
-        if MaxClientID.objects.filter(max_id_str='MAX').exists():
-            print('MaxClientId is empty')
-            max_client_id = MaxClientID.objects.get(max_id_str='MAX')
-            print('create new MaxClient')
-        else:
-            print('MaxClientId is not empty')
-            max_client_id = MaxClientID(max_id_str='MAX', max_id=1)
-            print('got the MaxClient')
-        client_id = max_client_id.max_id
-        max_client_id = MaxClientID(max_id_str='MAX', max_id = client_id + 1)
-        print('before save')
-        max_client_id.save()
-        print('after save')
+    #     print("got post request")
+    #     try:
+    #         flag = MaxClientID.objects.filter(max_id_str='MAX').exists()
+    #     except Exception as inst:
+    #         print(type(inst))
+    #         print(inst.args)
+    #         print(inst)
+    #     if MaxClientID.objects.filter(max_id_str='MAX').exists():
+    #         print('MaxClientId is empty')
+    #         max_client_id = MaxClientID.objects.get(max_id_str='MAX')
+    #         print('create new MaxClient')
+    #     else:
+    #         print('MaxClientId is not empty')
+    #         max_client_id = MaxClientID(max_id_str='MAX', max_id=1)
+    #         print('got the MaxClient')
+        client_id = max_client_id
+        max_client_id += 1
+    #     max_client_id = MaxClientID(max_id_str='MAX', max_id = client_id + 1)
+    #     print('before save')
+    #     max_client_id.save()
+    #     print('after save')
         time_statistic = TimeStatistic(device_id=client_id, mini_patch_times=0, total_time=0.0)
         try:
             time_statistic.save()
