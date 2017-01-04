@@ -7,7 +7,7 @@ class Greeting(models.Model):
 
 
 class MaxClientID(models.Model):
-    max_id_str = models.CharField(primary_key=True, max_length=20)
+    primary_id = models.IntegerField(primary_key=True)
     max_id = models.IntegerField()
 
 

@@ -20,21 +20,22 @@ def join_system(request):
     if request.method == 'POST':
         print("got post request")
         try:
-            flag = MaxClientID.objects.filter(max_id_str='MAX').exists()
+            time_statistic = TimeStatistic(device_id=-1, mini_patch_times=0, total_time=0.0)
+            flag = MaxClientID.objects.filter(primary_id=0).exists()
         except Exception as inst:
             print(type(inst))
             print(inst.args)
             print(inst)
-        if MaxClientID.objects.filter(max_id_str='MAX').exists():
+        if flag:
             print('MaxClientId is empty')
-            max_client_id = MaxClientID.objects.get(max_id_str='MAX')
+            max_client_id = MaxClientID.objects.get(primary_id=0)
             print('create new MaxClient')
         else:
             print('MaxClientId is not empty')
-            max_client_id = MaxClientID(max_id_str='MAX', max_id=1)
+            max_client_id = MaxClientID(primary_id=0, max_id=1)
             print('got the MaxClient')
         client_id = max_client_id.max_id
-        max_client_id = MaxClientID(max_id_str='MAX', max_id = client_id + 1)
+        max_client_id = MaxClientID(primary_id=0, max_id = client_id + 1)
         print('before save')
         max_client_id.save()
         print('after save')
