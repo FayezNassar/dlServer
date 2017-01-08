@@ -15,8 +15,6 @@ def join_system(request):
     client = MongoClient('mongodb://Fayez:Fayez93@ds157158.mlab.com:57158/primre')
     _db = client.primre
     if request.method == 'POST':
-        # _db.eval('function () { if (db.IDs.count() == 0) {db.IDs.insert_one({"max_id": 2})} '
-        #          ' else {db.IDs.find_one_and_upגשאק()}}')
         if _db.IDs.find().count() == 0:
             new_id = 1
             _db.IDs.insert_one({'max_id': 2})
