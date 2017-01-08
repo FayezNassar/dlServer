@@ -39,8 +39,6 @@ def deep_learning(request):
     client = MongoClient('mongodb://Fayez:Fayez93@ds157158.mlab.com:57158/primre')
     _db = client.primre
 
-    image_file_index = _db.GlobalParameters.find_one({'id': 1})['image_file_index']
-
     if request.method == 'GET':
         if _db.GlobalParameters.find_one({'id': 1})['image_file_index'] <= 45:
             mode = 'train'
@@ -51,7 +49,8 @@ def deep_learning(request):
                 mode = 'wait'
         if mode != 'wait':
             new_image_file_index = (_db.GlobalParameters.find_one({'id': 1})['image_file_index'] % 50) + 1
-            if _db.GlobalParameters.update({'id': 1}, {'$set': {'image_file_index': new_image_file_index}}) == 1:
+            image_file_index = _db.GlobalParameters.update({'id': 1}, {'$set': {'image_file_index': new_image_file_index}})
+            if new_image_file_index == 1:
                 _db.GlobalParameters.update({'id': 1}, {'$inc': {'epoch_number': 1}})
         data = {
             'image_file_index': image_file_index,
