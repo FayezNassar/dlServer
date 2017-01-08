@@ -69,13 +69,13 @@ def deep_learning(request):
         return HttpResponse(json.dumps(data))
 
     elif request.method == 'POST':
+        _db.GlobalParameters.update({'id': 1}, {'$inc': {'number_of_response_per_epoch': 1}})
+        # in the case the epoch done, reset the number_of_response_per_epoch to start a new epoch
+        if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] == 50:
+            _db.GlobalParameters.update({'id': 1}, {'$set': {'number_of_response_per_epoch': 0}})
         request_message = request.read().decode('utf-8')
         mode = str(json.loads(request_message)['mode'])
         if mode == 'train':
-            _db.GlobalParameters.update({'id': 1}, {'$inc': {'number_of_response_per_epoch': 1}})
-            # in the case the epoch done, reset the number_of_response_per_epoch to start a new epoch
-            if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] == 50:
-                _db.GlobalParameters.update({'id': 1}, {'$set': {'number_of_response_per_epoch': 0}})
             # collect the date that client sent, and update the relevant
             # update the time statistic
             client_id = json.loads(request_message)['id']
