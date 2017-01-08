@@ -28,7 +28,7 @@ def join_system(request):
             l1_list = lin_neural_network_l1.W.data.tolist()
             l2_list = lin_neural_network_l2.W.data.tolist()
             _db.GlobalParameters.insert_one({'id': 1, 'image_file_index': 1, 'number_of_response_per_epoch': 0,
-                                             'epoch_number': 0, 'l1_list': l1_list, 'l2_list': l2_list})
+                                             'epoch_number': 0, 'l1_list': l1_list, 'l2_list': l2_list, 'list_busy': 0})
         return HttpResponse(new_id)
     if request.method == 'GET':
         return HttpResponse('Hello From joinSystem Request')
@@ -86,6 +86,9 @@ def deep_learning(request):
             # update the network
             l1_delta_list = json.loads(request_message)['l1_delta']
             l2_delta_list = json.loads(request_message)['l2_delta']
+            while _db.GlobalParameters.find_one({'id': 1})['list_busy'] == 1:
+                continue
+            _db.GlobalParameters.update({'id': 1}, {'$set': {'list_busy': 0}})
             l1_list = _db.GlobalParameters.find_one({'id': 1})['l1_list']
             l2_list = _db.GlobalParameters.find_one({'id': 1})['l2_list']
             for i in range(300):
@@ -95,6 +98,7 @@ def deep_learning(request):
                 for j in range(300):
                     l2_list[i][j] += (l2_delta_list[i][j] * 0.1)  # 0.1 is the learning rate.
             _db.GlobalParameters.update({'id': 1}, {'$set': {'l1_list': l1_list, 'l2_list': l2_list}})
+            _db.GlobalParameters.update({'id': 1}, {'$set': {'list_busy': 1}})
         elif mode == 'validation':
             accuracy = json.loads(request_message)['accuracy']
             epoch_number = json.loads(request_message)['epoch_number']
