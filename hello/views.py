@@ -56,8 +56,8 @@ def deep_learning(request):
             image_file_index = _db.GlobalParameters.find_one({'id': 1})['image_file_index']
             _db.GlobalParameters.update({'id': 1}, {'$set': {'image_file_index': new_image_file_index}})
             if image_file_index == 1:
-                _db.GlobalParameters.update({'id': 1}, {'$inc': {'epoch_number': 1}},
-                                            {'$set': {'number_of_response_per_epoch': 0}})
+                _db.GlobalParameters.update({'id': 1},
+                                            {'$inc': {'epoch_number': 1}, '$set': {'number_of_response_per_epoch': 0}})
             print('image_file_index: ' + str(image_file_index))
             print('new_image_file_index: ' + str(new_image_file_index))
         data = {
