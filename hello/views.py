@@ -1,14 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 import json
-
 from .models import Greeting
-from .models import TimeStatistic
-from .models import AccuracyStatistic
-from .models import MaxClientID
-from . import MLP
-
-max_client_id = 1
+import chainer.links as L
+from pymongo import MongoClient
 
 
 def index(request):
@@ -16,112 +11,96 @@ def index(request):
 
 
 def join_system(request):
-    global max_client_id
+    # make connection and get he relevant database
+    client = MongoClient()
+    _db = client.primre
     if request.method == 'POST':
-        print("got post request")
-        try:
-            time_statistic = TimeStatistic(device_id=-1, mini_patch_times=0, total_time=0.0)
-            flag = MaxClientID.objects.filter(primary_id=0).exists()
-        except Exception as inst:
-            print(type(inst))
-            print(inst.args)
-            print(inst)
-        if flag:
-            print('MaxClientId is empty')
-            max_client_id = MaxClientID.objects.get(primary_id=0)
-            print('create new MaxClient')
+        if _db.IDs.find().count() == 0:
+            new_id = 1
+            _db.IDs.insert_one({'max_id': 2})
         else:
-            print('MaxClientId is not empty')
-            max_client_id = MaxClientID(primary_id=0, max_id=1)
-            print('got the MaxClient')
-        client_id = max_client_id.max_id
-        max_client_id = MaxClientID(primary_id=0, max_id = client_id + 1)
-        print('before save')
-        max_client_id.save()
-        print('after save')
-        time_statistic = TimeStatistic(device_id=client_id, mini_patch_times=0, total_time=0.0)
-        try:
-            time_statistic.save()
-        except Exception as inst:
-            print(type(inst))
-            print(inst.args)
-            print(inst)
-        return HttpResponse(client_id)
+            new_id = _db.IDs.find_one_and_update({}, {'$inc': {'max_id': 1}})['max_id']
+        _db.TimeStatistic.insert_one({'device_id': new_id, 'mini_patch_times': 1, 'total_time': 0.0})
+        return HttpResponse(new_id)
+    if request.method == 'GET':
+        return HttpResponse('Hello From joinSystem Request')
 
 
 def deep_learning(request):
+    # make connection and get he relevant database
+    client = MongoClient()
+    _db = client.primre
+    # init the system
+    lin_neural_network_l1 = L.Linear(784, 300)
+    lin_neural_network_l2 = L.Linear(300, 10)
+    l1_list = lin_neural_network_l1.W.data.tolist()
+    l2_list = lin_neural_network_l2.W.data.tolist()
+    if _db.GlobalParameters.find().count() == 0:
+        _db.GlobalParameters.insert_one({'id': 1, 'image_file_index': 1, 'number_of_response_per_epoch': 0,
+                                         'epoch_number': 0, 'l1_list': l1_list, 'l2_list': l2_list})
+        image_file_index = 1
+    else:
+        image_file_index = _db.GlobalParameters.find_one({'id': 1})['image_file_index']
+
+    number_of_response_per_epoch = _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch']
     if request.method == 'GET':
-        print('deep_learning/GET')
-        if MLP.image_file_index <= 45:
+        new_image_file_index = (image_file_index % 50) + 1
+        _db.GlobalParameters.update({'id': 1}, {'$set': {'image_file_index': new_image_file_index}})
+        if image_file_index <= 45:
             mode = 'train'
         else:
-            if MLP.number_of_response_per_epoch > 45:
+            if number_of_response_per_epoch > 45:
                 mode = 'validation'
             else:
                 mode = 'wait'
-        print('the mode is: ' + mode)
         if mode != 'wait':
-            if MLP.image_file_index == 1:
-                MLP.epoch_number += 1
+            if image_file_index == 1:
+                _db.GlobalParameters.update({'id': 1}, {'$inc': {'epoch_number': 1}})
         data = {
-            'image_file_index': MLP.image_file_index,
+            'image_file_index': image_file_index,
             'mode': mode,
-            'l1_w': MLP.linNeuralNetwork_l1.W.data.tolist(),
-            'l2_w': MLP.linNeuralNetwork_l2.W.data.tolist(),
-            'epoch_number': MLP.epoch_number,
+            'l1_w': _db.GlobalParameters.find_one({'id': 1})['l1_list'],
+            'l2_w': _db.GlobalParameters.find_one({'id': 1})['l2_list'],
+            'epoch_number': _db.GlobalParameters.find_one({'id': 1})['epoch_number'],
         }
-        if mode != 'wait':
-            MLP.image_file_index = (MLP.image_file_index % 50) + 1
-            # in the case the epoch done, reset the number_of_response_per_epoch to start a new repoch
-            if MLP.image_file_index == 50:
-                MLP.number_of_response_per_epoch = 0
         return HttpResponse(json.dumps(data))
 
     elif request.method == 'POST':
         request_message = request.read().decode('utf-8')
         mode = str(json.loads(request_message)['mode'])
         if mode == 'train':
-            MLP.number_of_response_per_epoch += 1
+            _db.GlobalParameters.update({'id': 1}, {'$inc': {'number_of_response_per_epoch': 1}})
+            # in the case the epoch done, reset the number_of_response_per_epoch to start a new epoch
+            if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] == 50:
+                _db.GlobalParameters.update({'id': 1}, {'$set': {'number_of_response_per_epoch': 0}})
             # collect the date that client sent, and update the relevant
             # update the time statistic
             client_id = json.loads(request_message)['id']
             work_time = json.loads(request_message)['work_time']
-            time_statistic = TimeStatistic.objects.get(device_id=client_id)
-            time_statistic = TimeStatistic(device_id=time_statistic.device_id,
-                                           mini_patch_times=time_statistic.mini_patch_times + 1,
-                                           total_time=time_statistic.total_time + work_time)
-            time_statistic.save()
+            _db.TimeStatistic.update({'device_id': client_id},
+                                     {'$inc': {'mini_patch_times': 1, 'total_time': work_time}})
 
             # update the network
             l1_delta_list = json.loads(request_message)['l1_delta']
             l2_delta_list = json.loads(request_message)['l2_delta']
+            l1_list = _db.GlobalParameters.find_one({'id': 1})['l1_list']
+            l2_list = _db.GlobalParameters.find_one({'id': 1})['l2_list']
             for i in range(300):
                 for j in range(784):
-                    MLP.linNeuralNetwork_l1.W.data[i][j] += (l1_delta_list[i][j] * 0.1)  # 0.1 is the learning rate.
+                    l1_list[i][j] += (l1_delta_list[i][j] * 0.1)  # 0.1 is the learning rate.
             for i in range(10):
                 for j in range(300):
-                    MLP.linNeuralNetwork_l2.W.data[i][j] += (l2_delta_list[i][j] * 0.1)  # 0.1 is the learning rate.
-
+                    l2_list[i][j] += (l2_delta_list[i][j] * 0.1)  # 0.1 is the learning rate.
+            _db.GlobalParameters.update({'id': 1}, {'$set': {'l1_list': l1_list, 'l2_list': l2_list}})
         elif mode == 'validation':
             accuracy = json.loads(request_message)['accuracy']
             epoch_number = json.loads(request_message)['epoch_number']
-            if AccuracyStatistic.objects.filter(epoch_number=epoch_number).exists():
-                accuracy_statistic = AccuracyStatistic.objects.get(epoch_number=epoch_number)
-                accuracy_statistic = AccuracyStatistic(epoch_number=epoch_number,
-                                                       accuracy=accuracy_statistic.accuracy + (accuracy / 5),
-                                                       number_of_validate_post=accuracy_statistic.number_of_validate_post + 1)
+            if _db.AccuracyStatistic.find({'epoch_number': epoch_number}).count() == 1:
+                _db.AccuracyStatistic.update({'epoch_number': epoch_number},
+                                             {'$inc': {'accuracy': (accuracy / 5), 'number_of_validate_post': 1}})
             else:
-                accuracy_statistic = AccuracyStatistic(epoch_number=epoch_number,
-                                                       accuracy=(accuracy / 5),
-                                                       number_of_validate_post=1)
-            accuracy_statistic.save()
-            print("epoch_number: " + str(accuracy_statistic.epoch_number))
-            print("accuracy: " + str(accuracy_statistic.accuracy))
-            print("number_of_validate_post: " + str(accuracy_statistic.number_of_validate_post))
-            accuracy_statistic = AccuracyStatistic(epoch_number=epoch_number,
-                                                   accuracy=accuracy_statistic.accuracy+(accuracy/5),
-                                                   number_of_validate_post=accuracy_statistic.number_of_validate_post+1)
-            accuracy_statistic.save()
+                _db.AccuracyStatistic.insert_one(
+                    {'epoch_number': epoch_number, 'accuracy': (accuracy / 5), 'number_of_validate_post': 1})
         return HttpResponse("<h2>Hello Deep learning server!</h2>")
 
 
