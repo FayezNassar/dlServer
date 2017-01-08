@@ -53,8 +53,9 @@ def deep_learning(request):
                 mode = 'wait'
         if mode != 'wait':
             new_image_file_index = (_db.GlobalParameters.find_one({'id': 1})['image_file_index'] % 50) + 1
-            image_file_index = _db.GlobalParameters.update({'id': 1},
+            collection = _db.GlobalParameters.update({'id': 1},
                                                            {'$set': {'image_file_index': new_image_file_index}})
+            image_file_index = collection['image_file_index']
             print('image_file_index: ' + str(image_file_index))
             print('new_image_file_index: ' + str(new_image_file_index))
             if image_file_index == 1:
