@@ -15,6 +15,8 @@ def join_system(request):
     client = MongoClient('mongodb://Fayez:Fayez93@ds157158.mlab.com:57158/primre')
     _db = client.primre
     if request.method == 'POST':
+        # _db.eval('function () { if (db.IDs.count() == 0) {db.IDs.insert_one({"max_id": 2})} '
+        #          ' else {db.IDs.find_one_and_upגשאק()}}')
         if _db.IDs.find().count() == 0:
             new_id = 1
             _db.IDs.insert_one({'max_id': 2})
@@ -42,18 +44,17 @@ def deep_learning(request):
     else:
         image_file_index = _db.GlobalParameters.find_one({'id': 1})['image_file_index']
 
-    number_of_response_per_epoch = _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch']
     if request.method == 'GET':
         new_image_file_index = (image_file_index % 50) + 1
-        _db.GlobalParameters.update({'id': 1}, {'$set': {'image_file_index': new_image_file_index}})
         if image_file_index <= 45:
             mode = 'train'
         else:
-            if number_of_response_per_epoch > 45:
+            if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] > 45:
                 mode = 'validation'
             else:
                 mode = 'wait'
         if mode != 'wait':
+            _db.GlobalParameters.update({'id': 1}, {'$set': {'image_file_index': new_image_file_index}})
             if image_file_index == 1:
                 _db.GlobalParameters.update({'id': 1}, {'$inc': {'epoch_number': 1}})
         data = {
