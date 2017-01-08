@@ -45,7 +45,7 @@ def deep_learning(request):
             print('mode is train')
             mode = 'train'
         else:
-            if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] > 45:
+            if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] >= 45:
                 mode = 'validation'
                 print('mode is validation')
             else:
@@ -56,7 +56,8 @@ def deep_learning(request):
             image_file_index = _db.GlobalParameters.find_one({'id': 1})['image_file_index']
             _db.GlobalParameters.update({'id': 1}, {'$set': {'image_file_index': new_image_file_index}})
             if image_file_index == 1:
-                _db.GlobalParameters.update({'id': 1}, {'$inc': {'epoch_number': 1}})
+                _db.GlobalParameters.update({'id': 1}, {'$inc': {'epoch_number': 1}},
+                                            {'$set': {'number_of_response_per_epoch': 0}})
             print('image_file_index: ' + str(image_file_index))
             print('new_image_file_index: ' + str(new_image_file_index))
         data = {
@@ -68,9 +69,6 @@ def deep_learning(request):
 
     elif request.method == 'POST':
         _db.GlobalParameters.update({'id': 1}, {'$inc': {'number_of_response_per_epoch': 1}})
-        # in the case the epoch done, reset the number_of_response_per_epoch to start a new epoch
-        if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] == 50:
-            _db.GlobalParameters.update({'id': 1}, {'$set': {'number_of_response_per_epoch': 0}})
         request_message = request.read().decode('utf-8')
         mode = str(json.loads(request_message)['mode'])
         if mode == 'train':
