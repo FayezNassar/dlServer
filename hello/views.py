@@ -12,7 +12,7 @@ def index(request):
 
 def join_system(request):
     # make connection and get he relevant database
-    client = MongoClient()
+    client = MongoClient('mongodb://Fayez:Fayez93@ds157158.mlab.com:57158/primre')
     _db = client.primre
     if request.method == 'POST':
         if _db.IDs.find().count() == 0:
@@ -28,7 +28,7 @@ def join_system(request):
 
 def deep_learning(request):
     # make connection and get he relevant database
-    client = MongoClient()
+    client = MongoClient('mongodb://Fayez:Fayez93@ds157158.mlab.com:57158/primre')
     _db = client.primre
     # init the system
     lin_neural_network_l1 = L.Linear(784, 300)
