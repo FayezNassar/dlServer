@@ -21,6 +21,14 @@ def join_system(request):
         else:
             new_id = _db.IDs.find_one_and_update({}, {'$inc': {'max_id': 1}})['max_id']
         _db.TimeStatistic.insert_one({'device_id': new_id, 'mini_patch_times': 1, 'total_time': 0.0})
+        if new_id == 1:
+            # init the system
+            lin_neural_network_l1 = L.Linear(784, 300)
+            lin_neural_network_l2 = L.Linear(300, 10)
+            l1_list = lin_neural_network_l1.W.data.tolist()
+            l2_list = lin_neural_network_l2.W.data.tolist()
+            _db.GlobalParameters.insert_one({'id': 1, 'image_file_index': 1, 'number_of_response_per_epoch': 0,
+                                             'epoch_number': 0, 'l1_list': l1_list, 'l2_list': l2_list})
         return HttpResponse(new_id)
     if request.method == 'GET':
         return HttpResponse('Hello From joinSystem Request')
@@ -30,21 +38,11 @@ def deep_learning(request):
     # make connection and get he relevant database
     client = MongoClient('mongodb://Fayez:Fayez93@ds157158.mlab.com:57158/primre')
     _db = client.primre
-    # init the system
-    lin_neural_network_l1 = L.Linear(784, 300)
-    lin_neural_network_l2 = L.Linear(300, 10)
-    l1_list = lin_neural_network_l1.W.data.tolist()
-    l2_list = lin_neural_network_l2.W.data.tolist()
-    if _db.GlobalParameters.find().count() == 0:
-        _db.GlobalParameters.insert_one({'id': 1, 'image_file_index': 1, 'number_of_response_per_epoch': 0,
-                                         'epoch_number': 0, 'l1_list': l1_list, 'l2_list': l2_list})
-        image_file_index = 1
-    else:
-        image_file_index = _db.GlobalParameters.find_one({'id': 1})['image_file_index']
+
+    image_file_index = _db.GlobalParameters.find_one({'id': 1})['image_file_index']
 
     if request.method == 'GET':
-        new_image_file_index = (image_file_index % 50) + 1
-        if image_file_index <= 45:
+        if _db.GlobalParameters.find_one({'id': 1})['image_file_index'] <= 45:
             mode = 'train'
         else:
             if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] > 45:
@@ -52,8 +50,8 @@ def deep_learning(request):
             else:
                 mode = 'wait'
         if mode != 'wait':
-            _db.GlobalParameters.update({'id': 1}, {'$set': {'image_file_index': new_image_file_index}})
-            if image_file_index == 1:
+            new_image_file_index = (_db.GlobalParameters.find_one({'id': 1})['image_file_index'] % 50) + 1
+            if _db.GlobalParameters.update({'id': 1}, {'$set': {'image_file_index': new_image_file_index}}) == 1:
                 _db.GlobalParameters.update({'id': 1}, {'$inc': {'epoch_number': 1}})
         data = {
             'image_file_index': image_file_index,
