@@ -62,8 +62,6 @@ def deep_learning(request):
         data = {
             'image_file_index': image_file_index,
             'mode': mode,
-            'l1_w': _db.GlobalParameters.find_one({'id': 1})['l1_list'],
-            'l2_w': _db.GlobalParameters.find_one({'id': 1})['l2_list'],
             'epoch_number': _db.GlobalParameters.find_one({'id': 1})['epoch_number'],
         }
         return HttpResponse(json.dumps(data))
@@ -82,23 +80,6 @@ def deep_learning(request):
             work_time = json.loads(request_message)['work_time']
             _db.TimeStatistic.update({'device_id': client_id},
                                      {'$inc': {'mini_patch_times': 1, 'total_time': work_time}})
-
-            # update the network
-            l1_delta_list = json.loads(request_message)['l1_delta']
-            l2_delta_list = json.loads(request_message)['l2_delta']
-            while _db.GlobalParameters.find_one({'id': 1})['list_busy'] == 0:
-                continue
-            _db.GlobalParameters.update({'id': 1}, {'$set': {'list_busy': 1}})
-            l1_list = _db.GlobalParameters.find_one({'id': 1})['l1_list']
-            l2_list = _db.GlobalParameters.find_one({'id': 1})['l2_list']
-            for i in range(300):
-                for j in range(784):
-                    l1_list[i][j] += (l1_delta_list[i][j] * 0.1)  # 0.1 is the learning rate.
-            for i in range(10):
-                for j in range(300):
-                    l2_list[i][j] += (l2_delta_list[i][j] * 0.1)  # 0.1 is the learning rate.
-            _db.GlobalParameters.update({'id': 1}, {'$set': {'l1_list': l1_list, 'l2_list': l2_list}})
-            _db.GlobalParameters.update({'id': 1}, {'$set': {'list_busy': 0}})
         elif mode == 'validation':
             accuracy = json.loads(request_message)['accuracy']
             epoch_number = json.loads(request_message)['epoch_number']
