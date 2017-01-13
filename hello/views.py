@@ -4,6 +4,7 @@ import json
 from .models import Greeting
 import chainer.links as L
 from pymongo import MongoClient
+import time
 
 
 def index(request):
@@ -63,7 +64,10 @@ def deep_learning(request):
             _db.GlobalParameters.update({'id': 1}, {'$set': {'image_file_index': new_image_file_index}})
             if image_file_index == 1:
                 _db.GlobalParameters.update({'id': 1},
-                                        {'$inc': {'epoch_number': 1}, '$set': {'number_of_response_per_epoch': 0}})
+                                            {'$inc': {'epoch_number': 1}, '$set': {'number_of_response_per_epoch': 0}})
+                _db.AccuracyStatistic.insert_one(
+                    {'epoch_number': _db.GlobalParameters.find_one({'id': 1})['epoch_number'], 'accuracy': 0,
+                     'number_of_validate_post': 0, 'start_time': time.time(), 'end_time': 0})
             print('image_file_index: ' + str(image_file_index))
             print('new_image_file_index: ' + str(new_image_file_index))
         data = {
@@ -94,12 +98,16 @@ def deep_learning(request):
             else:
                 _db.AccuracyStatistic.insert_one(
                     {'epoch_number': epoch_number, 'accuracy': (accuracy / 5), 'number_of_validate_post': 1})
+            if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] == 50:
+                _db.AccuracyStatistic.update(
+                    {'epoch_number': epoch_number}, {'$inc': {'end_time': time.time()}})
+
         elif mode == 'test':
             accuracy = json.loads(request_message)['accuracy']
             if _db.TestAccuracy.find({'id': 1}).count() == 1:
-                _db.TestAccuracy.update({'id': 1}, {'$inc': {'accuracy': (accuracy/50)}})
+                _db.TestAccuracy.update({'id': 1}, {'$inc': {'accuracy': (accuracy / 50)}})
             else:
-                _db.TestAccuracy.insert_one({'id': 1, 'accuracy': (accuracy/50)})
+                _db.TestAccuracy.insert_one({'id': 1, 'accuracy': (accuracy / 50)})
 
         return HttpResponse("<h2>Hello Deep learning server!</h2>")
 
