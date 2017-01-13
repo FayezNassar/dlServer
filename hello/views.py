@@ -92,6 +92,8 @@ def deep_learning(request):
             print('validation post')
             accuracy = json.loads(request_message)['accuracy']
             epoch_number = json.loads(request_message)['epoch_number']
+            print('accuracy: ' + str(accuracy))
+            print('epoch_number: ' + str(epoch_number))
             if _db.AccuracyStatistic.find({'epoch_number': epoch_number})['number_of_validate_post'] < 5:
                 print('number of validate post < 5')
                 _db.AccuracyStatistic.update({'epoch_number': epoch_number},
