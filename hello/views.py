@@ -48,11 +48,11 @@ def deep_learning(request):
             print('mode is test')
             mode = 'test'
         else:
-            if _db.GlobalParameters.find_one({'id': 1})['image_file_index'] <= 3:
+            if _db.GlobalParameters.find_one({'id': 1})['image_file_index'] <= 1:
                 print('mode is train')
                 mode = 'train'
             else:
-                if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] >= 3:
+                if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] >= 1:
                     mode = 'validation'
                     print('mode is validation')
                 else:
@@ -89,9 +89,11 @@ def deep_learning(request):
             _db.TimeStatistic.update({'device_id': client_id},
                                      {'$inc': {'mini_patch_times': 1, 'total_time': work_time}})
         elif mode == 'validation':
+            print('validation post')
             accuracy = json.loads(request_message)['accuracy']
             epoch_number = json.loads(request_message)['epoch_number']
             if _db.AccuracyStatistic.find({'epoch_number': epoch_number})['number_of_validate_post'] < 5:
+                print('number of validate post < 5')
                 _db.AccuracyStatistic.update({'epoch_number': epoch_number},
                                              {'$inc': {'accuracy': (accuracy / 5), 'number_of_validate_post': 1}})
             if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] == 50:
