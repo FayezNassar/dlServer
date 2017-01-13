@@ -41,23 +41,29 @@ def deep_learning(request):
     print('deep_learning')
     image_file_index = 1
     if request.method == 'GET':
-        if _db.GlobalParameters.find_one({'id': 1})['image_file_index'] <= 45:
-            print('mode is train')
-            mode = 'train'
+        if _db.GlobalParameters.find_one({'id': 1})['epoch_number'] == 12:
+            mode = 'stop'
+        elif _db.GlobalParameters.find_one({'id': 1})['epoch_number'] == 11:
+            print('mode is test')
+            mode = 'test'
         else:
-            if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] >= 45:
-                mode = 'validation'
-                print('mode is validation')
+            if _db.GlobalParameters.find_one({'id': 1})['image_file_index'] <= 45:
+                print('mode is train')
+                mode = 'train'
             else:
-                print('mode is wait')
-                mode = 'wait'
+                if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] >= 45:
+                    mode = 'validation'
+                    print('mode is validation')
+                else:
+                    print('mode is wait')
+                    mode = 'wait'
         if mode != 'wait':
             new_image_file_index = (_db.GlobalParameters.find_one({'id': 1})['image_file_index'] % 50) + 1
             image_file_index = _db.GlobalParameters.find_one({'id': 1})['image_file_index']
             _db.GlobalParameters.update({'id': 1}, {'$set': {'image_file_index': new_image_file_index}})
             if image_file_index == 1:
                 _db.GlobalParameters.update({'id': 1},
-                                            {'$inc': {'epoch_number': 1}, '$set': {'number_of_response_per_epoch': 0}})
+                                        {'$inc': {'epoch_number': 1}, '$set': {'number_of_response_per_epoch': 0}})
             print('image_file_index: ' + str(image_file_index))
             print('new_image_file_index: ' + str(new_image_file_index))
         data = {
@@ -82,11 +88,19 @@ def deep_learning(request):
             accuracy = json.loads(request_message)['accuracy']
             epoch_number = json.loads(request_message)['epoch_number']
             if _db.AccuracyStatistic.find({'epoch_number': epoch_number}).count() == 1:
-                _db.AccuracyStatistic.update({'epoch_number': epoch_number},
-                                             {'$inc': {'accuracy': (accuracy / 5), 'number_of_validate_post': 1}})
+                if _db.AccuracyStatistic.find({'epoch_number': epoch_number})['number_of_validate_post'] < 5:
+                    _db.AccuracyStatistic.update({'epoch_number': epoch_number},
+                                                 {'$inc': {'accuracy': (accuracy / 5), 'number_of_validate_post': 1}})
             else:
                 _db.AccuracyStatistic.insert_one(
                     {'epoch_number': epoch_number, 'accuracy': (accuracy / 5), 'number_of_validate_post': 1})
+        elif mode == 'test':
+            accuracy = json.loads(request_message)['accuracy']
+            if _db.TestAccuracy.find({'id': 1}).count() == 1:
+                _db.TestAccuracy.update({'id': 1}, {'$inc': {'accuracy': (accuracy/50)}})
+            else:
+                _db.TestAccuracy.insert_one({'id': 1, 'accuracy': (accuracy/50)})
+
         return HttpResponse("<h2>Hello Deep learning server!</h2>")
 
 
