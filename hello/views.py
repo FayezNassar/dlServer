@@ -48,11 +48,11 @@ def deep_learning(request):
             print('mode is test')
             mode = 'test'
         else:
-            if _db.GlobalParameters.find_one({'id': 1})['image_file_index'] <= 45:
+            if _db.GlobalParameters.find_one({'id': 1})['image_file_index'] <= 3:
                 print('mode is train')
                 mode = 'train'
             else:
-                if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] >= 45:
+                if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] >= 3:
                     mode = 'validation'
                     print('mode is validation')
                 else:
@@ -91,13 +91,9 @@ def deep_learning(request):
         elif mode == 'validation':
             accuracy = json.loads(request_message)['accuracy']
             epoch_number = json.loads(request_message)['epoch_number']
-            if _db.AccuracyStatistic.find({'epoch_number': epoch_number}).count() == 1:
-                if _db.AccuracyStatistic.find({'epoch_number': epoch_number})['number_of_validate_post'] < 5:
-                    _db.AccuracyStatistic.update({'epoch_number': epoch_number},
-                                                 {'$inc': {'accuracy': (accuracy / 5), 'number_of_validate_post': 1}})
-            else:
-                _db.AccuracyStatistic.insert_one(
-                    {'epoch_number': epoch_number, 'accuracy': (accuracy / 5), 'number_of_validate_post': 1})
+            if _db.AccuracyStatistic.find({'epoch_number': epoch_number})['number_of_validate_post'] < 5:
+                _db.AccuracyStatistic.update({'epoch_number': epoch_number},
+                                             {'$inc': {'accuracy': (accuracy / 5), 'number_of_validate_post': 1}})
             if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] == 50:
                 _db.AccuracyStatistic.update(
                     {'epoch_number': epoch_number}, {'$inc': {'end_time': time.time()}})
