@@ -94,14 +94,17 @@ def deep_learning(request):
             epoch_number = json.loads(request_message)['epoch_number']
             print('accuracy: ' + str(accuracy))
             print('epoch_number: ' + str(epoch_number))
-            if _db.AccuracyStatistic.find({'epoch_number': epoch_number})['number_of_validate_post'] < 5:
-                print('number of validate post < 5')
-                _db.AccuracyStatistic.update({'epoch_number': epoch_number},
-                                             {'$inc': {'accuracy': (accuracy / 5), 'number_of_validate_post': 1}})
-            if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] == 50:
-                _db.AccuracyStatistic.update(
-                    {'epoch_number': epoch_number}, {'$inc': {'end_time': time.time()}})
-
+            try:
+                if _db.AccuracyStatistic.find({'epoch_number': epoch_number})['number_of_validate_post'] < 5:
+                    print('number of validate post < 5')
+                    _db.AccuracyStatistic.update({'epoch_number': epoch_number},
+                                                 {'$inc': {'accuracy': (accuracy / 5), 'number_of_validate_post': 1}})
+                if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] == 50:
+                    _db.AccuracyStatistic.update(
+                        {'epoch_number': epoch_number}, {'$inc': {'end_time': time.time()}})
+            except Exception as inst:
+                print(type(inst))
+                print(inst)
         elif mode == 'test':
             accuracy = json.loads(request_message)['accuracy']
             if _db.TestAccuracy.find({'id': 1}).count() == 1:
