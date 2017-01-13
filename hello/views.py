@@ -48,11 +48,11 @@ def deep_learning(request):
             print('mode is test')
             mode = 'test'
         else:
-            if _db.GlobalParameters.find_one({'id': 1})['image_file_index'] <= 1:
+            if _db.GlobalParameters.find_one({'id': 1})['image_file_index'] <= 45:
                 print('mode is train')
                 mode = 'train'
             else:
-                if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] >= 1:
+                if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] >= 45:
                     mode = 'validation'
                     print('mode is validation')
                 else:
