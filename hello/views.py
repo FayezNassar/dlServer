@@ -42,22 +42,16 @@ def deep_learning(request):
     print('deep_learning')
     image_file_index = 1
     if request.method == 'GET':
-        if _db.GlobalParameters.find_one({'id': 1})['epoch_number'] == 12:
-            mode = 'stop'
-        elif _db.GlobalParameters.find_one({'id': 1})['epoch_number'] == 11:
-            print('mode is test')
-            mode = 'test'
+        if _db.GlobalParameters.find_one({'id': 1})['image_file_index'] <= 45:
+            print('mode is train')
+            mode = 'train'
         else:
-            if _db.GlobalParameters.find_one({'id': 1})['image_file_index'] <= 45:
-                print('mode is train')
-                mode = 'train'
+            if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] >= 45:
+                mode = 'validation'
+                print('mode is validation')
             else:
-                if _db.GlobalParameters.find_one({'id': 1})['number_of_response_per_epoch'] >= 45:
-                    mode = 'validation'
-                    print('mode is validation')
-                else:
-                    print('mode is wait')
-                    mode = 'wait'
+                print('mode is wait')
+                mode = 'wait'
         if mode != 'wait':
             new_image_file_index = (_db.GlobalParameters.find_one({'id': 1})['image_file_index'] % 50) + 1
             image_file_index = _db.GlobalParameters.find_one({'id': 1})['image_file_index']
@@ -70,6 +64,11 @@ def deep_learning(request):
                      'number_of_validate_post': 0, 'start_time': time.time(), 'end_time': 0})
             print('image_file_index: ' + str(image_file_index))
             print('new_image_file_index: ' + str(new_image_file_index))
+        if _db.GlobalParameters.find_one({'id': 1})['epoch_number'] == 12:
+            mode = 'stop'
+        elif _db.GlobalParameters.find_one({'id': 1})['epoch_number'] == 11:
+            print('mode is test')
+            mode = 'test'
         data = {
             'image_file_index': image_file_index,
             'mode': mode,
