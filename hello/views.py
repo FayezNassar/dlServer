@@ -29,7 +29,8 @@ def join_system(request):
             l1_list = lin_neural_network_l1.W.data.tolist()
             l2_list = lin_neural_network_l2.W.data.tolist()
             _db.GlobalParameters.insert_one({'id': 1, 'image_file_index': 1, 'number_of_response_per_epoch': 0,
-                                             'epoch_number': 0, 'l1_list': l1_list, 'l2_list': l2_list, 'list_busy': 0})
+                                             'epoch_number': 0, 'list_busy': 0})
+            _db.Network.insert_one({'id': 1, 'l1_list': l1_list, 'l2_list': l2_list})
         return HttpResponse(new_id)
     if request.method == 'GET':
         return HttpResponse('Hello From joinSystem Request')
