@@ -43,7 +43,7 @@ def join_system(request):
 
 def deep_learning(request):
     # make connection and get he relevant database
-    client = MongoClient('mongodb://Fayez:Fayez93@ds157158.mlab.com:57158/primre')
+    client = MongoClient('mongodb://Fayez:Fayez93@ds111529.mlab.com:11529/primre')
     _db = client.primre
     print('deep_learning')
     image_file_index = 1
