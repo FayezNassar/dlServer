@@ -16,22 +16,27 @@ def join_system(request):
     client = MongoClient('mongodb://Fayez:Fayez93@ds157158.mlab.com:57158/primre')
     _db = client.primre
     if request.method == 'POST':
-        if _db.IDs.find().count() == 0:
-            new_id = 1
-            _db.IDs.insert_one({'max_id': 2})
-        else:
-            new_id = _db.IDs.find_one_and_update({}, {'$inc': {'max_id': 1}})['max_id']
-        _db.TimeStatistic.insert_one({'device_id': new_id, 'mini_patch_times': 1, 'total_time': 0.0})
-        if new_id == 1:
-            # init the system
-            lin_neural_network_l1 = L.Linear(784, 300)
-            lin_neural_network_l2 = L.Linear(300, 10)
-            l1_list = lin_neural_network_l1.W.data.tolist()
-            l2_list = lin_neural_network_l2.W.data.tolist()
-            _db.GlobalParameters.insert_one({'id': 1, 'image_file_index': 1, 'number_of_response_per_epoch': 0,
-                                             'epoch_number': 0, 'list_busy': 0})
-            _db.Network.insert_one({'id': 1, 'l1_list': l1_list, 'l2_list': l2_list})
-        return HttpResponse(new_id)
+        print('got post request')
+        try:
+            if _db.IDs.find().count() == 0:
+                new_id = 1
+                _db.IDs.insert_one({'max_id': 2})
+            else:
+                new_id = _db.IDs.find_one_and_update({}, {'$inc': {'max_id': 1}})['max_id']
+            _db.TimeStatistic.insert_one({'device_id': new_id, 'mini_patch_times': 1, 'total_time': 0.0})
+            if new_id == 1:
+                # init the system
+                lin_neural_network_l1 = L.Linear(784, 300)
+                lin_neural_network_l2 = L.Linear(300, 10)
+                l1_list = lin_neural_network_l1.W.data.tolist()
+                l2_list = lin_neural_network_l2.W.data.tolist()
+                _db.GlobalParameters.insert_one({'id': 1, 'image_file_index': 1, 'number_of_response_per_epoch': 0,
+                                                 'epoch_number': 0, 'list_busy': 0})
+                _db.Network.insert_one({'id': 1, 'l1_list': l1_list, 'l2_list': l2_list})
+            return HttpResponse(new_id)
+        except Exception as inst:
+            print(type(inst))
+            print(inst)
     if request.method == 'GET':
         return HttpResponse('Hello From joinSystem Request')
 
